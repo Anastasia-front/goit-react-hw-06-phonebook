@@ -1,33 +1,39 @@
 import { Form, Label, Input, Submit } from './ContactForm.styled';
-import { useState } from 'react';
 import { nanoid } from 'nanoid';
-import PropTypes from 'prop-types';
+import { useDispatch, useSelector } from 'react-redux';
+import { addContact } from 'redux/contactSlice';
+import { selectContacts } from 'redux/selectors';
 
-export default function ContactForm({ onSubmit }) {
-  const [input, setInput] = useState({ name: '', number: '' });
+export default function ContactForm() {
+  const dispatch = useDispatch();
+  const contacts = useSelector(selectContacts);
 
-  const handleInputChange = event => {
-    const { name, value } = event.target;
-    setInput({ ...input, [name]: value });
+  const handleSubmit = event => {
+    event.preventDefault();
+    const form = event.target;
+    const name = form.elements.name.value;
+    const number = form.elements.number.value;
+
+    const isDuplicate = contacts.some(
+      contact => contact.text.name.toLowerCase() === name.toLowerCase()
+    );
+    if (isDuplicate) {
+      alert(`${name} is already in contacts`);
+    } else {
+      dispatch(addContact({ name, number }));
+    }
+
+    form.reset();
   };
 
   const nameInputId = nanoid();
   const numberInputId = nanoid();
 
-  const handleSubmit = e => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const name = form.elements.name.value;
-    const number = form.elements.number.value;
-    onSubmit({ name, number });
-    form.reset();
-  };
   return (
     <Form onSubmit={handleSubmit}>
       <Label htmlFor={nameInputId}>
         Name
         <Input
-          onChange={handleInputChange}
           type="text"
           name="name"
           id={nameInputId}
@@ -39,7 +45,6 @@ export default function ContactForm({ onSubmit }) {
       <Label htmlFor={numberInputId}>
         Number
         <Input
-          onChange={handleInputChange}
           type="tel"
           name="number"
           id={numberInputId}
@@ -52,7 +57,3 @@ export default function ContactForm({ onSubmit }) {
     </Form>
   );
 }
-
-ContactForm.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};

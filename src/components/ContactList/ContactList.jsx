@@ -1,20 +1,28 @@
-import PropTypes from 'prop-types';
 import { Li, List, Delete } from './ContactList.styled';
-import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectContacts, selectFilter } from 'redux/selectors';
+import { deleteContact } from 'redux/contactSlice';
 
-const Items = ({ options, onDeleteContact }) => {
+const getVisibleTasks = (contacts, filter) => {
+  const normilizedFilter = filter.toLowerCase();
+  return contacts.filter(contact =>
+    contact.text['name'].toLowerCase().includes(normilizedFilter)
+  );
+};
+
+const Items = () => {
+  const contacts = useSelector(selectContacts);
+  const filter = useSelector(selectFilter);
+  const visibleTasks = getVisibleTasks(contacts, filter);
+  const dispatch = useDispatch();
   return (
     <List>
-      {options.length ? (
-        options.map(({ id, text }) => (
+      {visibleTasks.length ? (
+        visibleTasks.map(({ id, text }) => (
           <Li key={id}>
             <p>
-              {text.name}: {text.number}{' '}
-              <Delete
-                onClick={() => {
-                  onDeleteContact(id);
-                }}
-              >
+              {text.name}: {text.number}
+              <Delete onClick={() => dispatch(deleteContact(id))}>
                 Delete
               </Delete>
             </p>
@@ -28,16 +36,3 @@ const Items = ({ options, onDeleteContact }) => {
 };
 
 export default Items;
-
-Items.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      text: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-        number: PropTypes.string.isRequired,
-      }),
-    })
-  ),
-  onDeleteContact: PropTypes.func.isRequired,
-};
