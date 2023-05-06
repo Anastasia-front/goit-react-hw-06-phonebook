@@ -21,9 +21,8 @@ export default function ContactForm() {
       alert(`${name} is already in contacts`);
     } else {
       dispatch(addContact({ name, number }));
+      form.reset();
     }
-
-    form.reset();
   };
 
   const nameInputId = nanoid();
